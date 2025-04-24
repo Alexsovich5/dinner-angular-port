@@ -1,0 +1,41 @@
+<div class="profile-container">
+    <h1>Manage Your Profile</h1>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill">
+            <mat-label>First Name</mat-label>
+            <input matInput formControlName="firstName" />
+            <mat-error *ngIf="profileForm.get('firstName')?.invalid">First name is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Last Name</mat-label>
+            <input matInput formControlName="lastName" />
+            <mat-error *ngIf="profileForm.get('lastName')?.invalid">Last name is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" />
+            <mat-error *ngIf="profileForm.get('email')?.invalid">Valid email is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Bio</mat-label>
+            <textarea matInput formControlName="bio"></textarea>
+        </mat-form-field>
+
+        <div class="file-upload">
+            <label for="profilePicture">Profile Picture</label>
+            <input id="profilePicture" type="file" (change)="onFileChange($event)" />
+        </div>
+
+        <button mat-raised-button color="primary" type="submit"
+            [disabled]="profileForm.invalid || isLoading">Save</button>
+    </form>
+
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+    <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
+    <p *ngIf="error" class="error">{{ error }}</p>
+</div>
