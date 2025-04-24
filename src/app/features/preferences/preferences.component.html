@@ -1,0 +1,49 @@
+<div class="preferences-container">
+    <h1>Manage Your Preferences</h1>
+
+    <form [formGroup]="preferencesForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill">
+            <mat-label>Food Preferences</mat-label>
+            <input matInput formControlName="foodPreferences" />
+            <mat-error *ngIf="preferencesForm.get('foodPreferences')?.invalid">Food preferences are required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Dietary Restrictions</mat-label>
+            <input matInput formControlName="dietaryRestrictions" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Location</mat-label>
+            <input matInput formControlName="location" />
+            <mat-error *ngIf="preferencesForm.get('location')?.invalid">Location is required</mat-error>
+        </mat-form-field>
+
+        <div formGroupName="ageRange">
+            <mat-form-field appearance="fill">
+                <mat-label>Minimum Age</mat-label>
+                <input matInput formControlName="min" type="number" />
+                <mat-error *ngIf="preferencesForm.get('ageRange.min')?.invalid">Minimum age is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <mat-label>Maximum Age</mat-label>
+                <input matInput formControlName="max" type="number" />
+                <mat-error *ngIf="preferencesForm.get('ageRange.max')?.invalid">Maximum age is required</mat-error>
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Preferred Genders</mat-label>
+            <input matInput formControlName="genders" />
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit"
+            [disabled]="preferencesForm.invalid || isLoading">Save</button>
+    </form>
+
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+    <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
+    <p *ngIf="error" class="error">{{ error }}</p>
+</div>

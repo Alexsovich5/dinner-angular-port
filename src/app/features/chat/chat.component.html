@@ -1,0 +1,21 @@
+<div class="chat-container">
+    <h1>Chat</h1>
+
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div class="messages" *ngIf="!isLoading">
+        <div *ngFor="let message of messages" class="message">
+            <p><strong>{{ message.sender }}:</strong> {{ message.text }}</p>
+        </div>
+    </div>
+
+    <form [formGroup]="chatForm" (ngSubmit)="onSendMessage()">
+        <mat-form-field appearance="fill">
+            <mat-label>Type a message</mat-label>
+            <input matInput formControlName="message" />
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="submit" [disabled]="chatForm.invalid">Send</button>
+    </form>
+</div>

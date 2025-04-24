@@ -1,0 +1,37 @@
+.discover-container {
+  text-align: center;
+  padding: 2rem;
+}
+
+.profile-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem auto;
+  max-width: 400px;
+  text-align: left;
+}
+
+.profile-card img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.profile-card h2 {
+  margin: 0.5rem 0;
+}
+
+.profile-card button {
+  margin-right: 0.5rem;
+}
+
+.error {
+  color: red;
+  margin: 1rem 0;
+}
+
+.no-profiles {
+  color: gray;
+  margin: 1rem 0;
+}

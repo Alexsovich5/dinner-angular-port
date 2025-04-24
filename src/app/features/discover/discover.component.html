@@ -1,0 +1,19 @@
+<div class="discover-container">
+    <h1>Discover Profiles</h1>
+
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div *ngIf="!isLoading && profiles.length === 0" class="no-profiles">
+        <p>No profiles available at the moment.</p>
+    </div>
+
+    <div *ngFor="let profile of profiles" class="profile-card">
+        <img [src]="profile.picture" alt="{{ profile.name }}" />
+        <h2>{{ profile.name }}</h2>
+        <p>{{ profile.bio }}</p>
+        <button mat-raised-button color="primary" (click)="onLike(profile.id)">Like</button>
+        <button mat-raised-button color="warn" (click)="onDislike(profile.id)">Dislike</button>
+    </div>
+</div>
