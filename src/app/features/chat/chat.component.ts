@@ -1,39 +1,79 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../core/services/chat.service';
+
+interface Message {
+  id: string;
+  senderId: string;
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+}
+
+interface ChatUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  profilePicture?: string;
+  lastActive?: string;
+}
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
-export class ChatComponent implements OnInit {
-  chatForm: FormGroup;
-  messages: any[] = [];
-  isLoading = false;
-  error: string | null = null;
+export class ChatComponent implements OnInit, OnDestroy {
+  @ViewChild('messageContainer') private messageContainer!: ElementRef;
 
-  constructor(private fb: FormBuilder, private chatService: ChatService) {
+  chatForm: FormGroup;
+  messages: Message[] = [];
+  chatPartner: ChatUser | null = null;
+  isLoading = true;
+  isSending = false;
+  error: string | null = null;
+  userId: string | null = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private chatService: ChatService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     this.chatForm = this.fb.group({
       message: ['', [Validators.required]]
     });
   }
 
   ngOnInit(): void {
-    this.loadMessages();
-    this.chatService.listenForMessages().subscribe((message) => {
-      this.messages.push(message);
-    });
+    this.userId = this.route.snapshot.paramMap.get('id');
+    if (this.userId) {
+      this.loadChatData();
+    } else {
+      this.error = 'Invalid chat. Please go back to matches.';
+      this.isLoading = false;
+    }
   }
 
-  loadMessages(): void {
+  ngOnDestroy(): void {
+    // Cleanup any subscriptions or WebSocket connections
+    this.chatService.disconnect();
+  }
+
+  loadChatData(): void {
     this.isLoading = true;
-    this.chatService.getMessageHistory().subscribe({
-      next: (messages) => {
-        this.messages = messages;
+    this.error = null;
+
+    this.chatService.getChatData(this.userId!).subscribe({
+      next: (data) => {
+        this.chatPartner = data.user;
+        this.messages = data.messages;
+        this.scrollToBottom();
       },
       error: (err) => {
-        this.error = err.message || 'Failed to load messages';
+        console.error('Error fetching chat data:', err);
+        this.error = 'Failed to load chat. Please try again later.';
       },
       complete: () => {
         this.isLoading = false;
@@ -42,16 +82,73 @@ export class ChatComponent implements OnInit {
   }
 
   onSendMessage(): void {
-    if (this.chatForm.valid) {
-      const { message } = this.chatForm.value;
-      this.chatService.sendMessage(message).subscribe({
-        next: () => {
-          this.chatForm.reset();
-        },
-        error: (err) => {
-          this.error = err.message || 'Failed to send message';
-        }
-      });
+    if (!this.chatForm.valid || this.isSending) return;
+
+    const message = this.chatForm.get('message')?.value.trim();
+    if (!message) return;
+
+    this.isSending = true;
+
+    this.chatService.sendMessage(this.userId!, message).subscribe({
+      next: (newMessage) => {
+        this.messages = [...this.messages, newMessage];
+        this.chatForm.reset();
+        this.scrollToBottom();
+      },
+      error: (err) => {
+        this.error = 'Failed to send message. Please try again.';
+      },
+      complete: () => {
+        this.isSending = false;
+      }
+    });
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      try {
+        this.messageContainer.nativeElement.scrollTop =
+          this.messageContainer.nativeElement.scrollHeight;
+      } catch (err) {}
+    });
+  }
+
+  calculateAge(dateOfBirth: string): number {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
     }
+    return age;
+  }
+
+  formatTime(timestamp: string): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    // Today
+    if (date.toDateString() === now.toDateString()) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Yesterday
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return `Yesterday ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    // Older
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  navigateToMatches(): void {
+    this.router.navigate(['/matches']);
+  }
+
+  navigateToPreferences(): void {
+    this.router.navigate(['/preferences']);
   }
 }

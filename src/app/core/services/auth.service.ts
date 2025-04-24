@@ -133,6 +133,24 @@ export class AuthService {
       );
   }
 
+  forgotPassword(email: string): Observable<any> {
+    this.isLoadingSubject.next(true);
+    this.errorSubject.next(null);
+
+    return this.http.post(`${environment.apiUrl}/auth/forgot-password`, { email })
+      .pipe(
+        tap({
+          error: (error) => {
+            this.errorSubject.next(error.message || 'Failed to send recovery email');
+            throw error;
+          },
+          finalize: () => {
+            this.isLoadingSubject.next(false);
+          }
+        })
+      );
+  }
+
   clearError(): void {
     this.errorSubject.next(null);
   }

@@ -13,13 +13,35 @@ export class ProfileComponent implements OnInit {
   error: string | null = null;
   successMessage: string | null = null;
 
+  // Options for select fields
+  dietaryOptions = [
+    'vegetarian', 'vegan', 'pescatarian', 'gluten-free',
+    'dairy-free', 'kosher', 'halal', 'keto', 'paleo',
+    'no restrictions', 'other'
+  ];
+
+  genderOptions = ['male', 'female', 'non-binary'];
+
   constructor(private fb: FormBuilder, private profileService: ProfileService) {
     this.profileForm = this.fb.group({
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      bio: [''],
-      profilePicture: [null]
+      bio: ['', [Validators.maxLength(500)]],
+      profilePicture: [null],
+      interests: [[]],
+      dietaryPreferences: [[]],
+      locationPreferences: this.fb.group({
+        city: [''],
+        maxDistance: [30, [Validators.min(5), Validators.max(100)]]
+      }),
+      matchPreferences: this.fb.group({
+        ageRange: this.fb.group({
+          min: [21, [Validators.required, Validators.min(18)]],
+          max: [65, [Validators.required, Validators.max(99)]]
+        }),
+        genders: [[]]
+      })
     });
   }
 
@@ -42,6 +64,23 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  addInterest(interest: string): void {
+    if (!interest.trim()) return;
+    const interests = this.profileForm.get('interests')?.value || [];
+    if (!interests.includes(interest.trim())) {
+      this.profileForm.patchValue({
+        interests: [...interests, interest.trim()]
+      });
+    }
+  }
+
+  removeInterest(interest: string): void {
+    const interests = this.profileForm.get('interests')?.value || [];
+    this.profileForm.patchValue({
+      interests: interests.filter((i: string) => i !== interest)
+    });
+  }
+
   onSubmit(): void {
     if (this.profileForm.valid) {
       this.isLoading = true;
@@ -50,7 +89,11 @@ export class ProfileComponent implements OnInit {
 
       const formData = new FormData();
       Object.keys(this.profileForm.value).forEach((key) => {
-        formData.append(key, this.profileForm.value[key]);
+        if (key === 'locationPreferences' || key === 'matchPreferences') {
+          formData.append(key, JSON.stringify(this.profileForm.value[key]));
+        } else {
+          formData.append(key, this.profileForm.value[key]);
+        }
       });
 
       this.profileService.updateProfile(formData).subscribe({

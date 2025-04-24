@@ -1,19 +1,61 @@
 <div class="discover-container">
-    <h1>Discover Profiles</h1>
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
 
-    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+  <div *ngIf="error" class="error-message">
+    <mat-error>{{ error }}</mat-error>
+  </div>
 
-    <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="!isLoading && !currentMatch" class="no-matches">
+    <mat-card>
+      <mat-card-content>
+        <h2>No More Matches</h2>
+        <p>We're looking for more people that match your preferences.</p>
+        <button mat-raised-button color="primary" (click)="loadProfiles()">
+          Refresh Matches
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
 
-    <div *ngIf="!isLoading && profiles.length === 0" class="no-profiles">
-        <p>No profiles available at the moment.</p>
-    </div>
+  <div *ngIf="currentMatch" class="match-card">
+    <mat-card>
+      <img mat-card-image [src]="currentMatch.profilePictures[0]" [alt]="currentMatch.firstName">
+      <mat-card-content>
+        <h2>{{ currentMatch.firstName }} {{ currentMatch.lastName }}</h2>
+        <p>{{ calculateAge(currentMatch.dateOfBirth) }} years old</p>
 
-    <div *ngFor="let profile of profiles" class="profile-card">
-        <img [src]="profile.picture" alt="{{ profile.name }}" />
-        <h2>{{ profile.name }}</h2>
-        <p>{{ profile.bio }}</p>
-        <button mat-raised-button color="primary" (click)="onLike(profile.id)">Like</button>
-        <button mat-raised-button color="warn" (click)="onDislike(profile.id)">Dislike</button>
-    </div>
+        <p *ngIf="currentMatch.bio">{{ currentMatch.bio }}</p>
+
+        <mat-divider></mat-divider>
+
+        <h3>Interests</h3>
+        <mat-chip-list *ngIf="currentMatch.interests?.length">
+          <mat-chip *ngFor="let interest of currentMatch.interests">
+            {{ interest }}
+          </mat-chip>
+        </mat-chip-list>
+
+        <h3>Dietary Preferences</h3>
+        <mat-chip-list *ngIf="currentMatch.dietaryPreferences?.length">
+          <mat-chip *ngFor="let pref of currentMatch.dietaryPreferences">
+            {{ pref }}
+          </mat-chip>
+        </mat-chip-list>
+
+        <p *ngIf="currentMatch.distance" class="distance">
+          <mat-icon>place</mat-icon>
+          {{ currentMatch.distance }} miles away
+        </p>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-fab color="warn" (click)="onDislike(currentMatch._id)">
+          <mat-icon>close</mat-icon>
+        </button>
+        <button mat-fab color="primary" (click)="onLike(currentMatch._id)">
+          <mat-icon>favorite</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
 </div>
