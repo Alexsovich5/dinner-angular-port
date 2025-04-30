@@ -173,7 +173,7 @@ export class DiscoverComponent implements OnInit {
       next: () => {
         this.showNextProfile();
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.error = err.message ?? 'Failed to like profile';
         this.animationState = 'default';
       }
@@ -188,7 +188,7 @@ export class DiscoverComponent implements OnInit {
       next: () => {
         this.showNextProfile();
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.error = err.message ?? 'Failed to pass on profile';
         this.animationState = 'default';
       }

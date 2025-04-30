@@ -40,7 +40,7 @@ export class ChatService {
 
   private setupWebSocket(): void {
     // In a real app, this would be your WebSocket server URL
-    this.socket$ = webSocket(`${environment.wsUrl}/chat`);
+    this.socket$ = webSocket(`${environment.socketUrl}/chat`);
 
     this.socket$.subscribe({
       next: (message) => this.handleWebSocketMessage(message),

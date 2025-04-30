@@ -26,7 +26,7 @@ interface ChatUser {
   firstName: string;
   lastName: string;
   profilePicture?: string;
-  lastActive?: Date;
+  lastActive?: string; // Changed from Date to string to match service response
 }
 
 @Component({

@@ -48,6 +48,15 @@ export class DiscoverService {
     );
   }
 
+  dislikeProfile(profileId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/dislike/${profileId}`, {}).pipe(
+      catchError(error => {
+        console.error('Error disliking profile:', error);
+        throw new Error('Failed to pass on profile');
+      })
+    );
+  }
+
   // Additional methods for future implementation
   getMatches(): Observable<PotentialMatch[]> {
     return this.http.get<PotentialMatch[]>(`${this.apiUrl}/matches`);
