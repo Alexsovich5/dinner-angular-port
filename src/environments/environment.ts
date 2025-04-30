@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: 'http://localhost:5001/api',
   tokenKey: 'dinner1_auth_token',
-  socketUrl: 'ws://localhost:3000',
+  socketUrl: 'ws://localhost:5001',
 };
