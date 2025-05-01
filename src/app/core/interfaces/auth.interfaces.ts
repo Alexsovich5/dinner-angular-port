@@ -1,49 +1,59 @@
 export interface User {
-  _id: string;
+  id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  profilePicture?: string;
-  dateOfBirth: string;
+  first_name: string;
+  last_name: string;
+  profile_picture?: string;
+  date_of_birth: string;
   gender: string;
-  isProfileComplete: boolean;
+  is_profile_complete: boolean;
   bio?: string;
   interests?: string[];
-  dietaryPreferences?: string[];
-  locationPreferences?: {
+  dietary_preferences?: string[];
+  location_preferences?: {
     city?: string;
-    maxDistance?: number;
+    max_distance?: number;
     coordinates?: {
       latitude: number;
       longitude: number;
     };
   };
-  matchPreferences?: {
-    ageRange?: {
+  match_preferences?: {
+    age_range?: {
       min: number;
       max: number;
     };
     genders?: string[];
   };
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface RegisterData {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
+  first_name: string;
+  last_name: string;
+  date_of_birth: string;
   gender: string;
-  dietaryPreferences?: string[];
-  cuisinePreferences?: string;
+  dietary_preferences?: string[];
+  cuisine_preferences?: string;
   location?: string;
-  lookingFor?: string;
+  looking_for?: string;
 }
 
 export interface LoginResponse {
-  success: boolean;
-  data: {
-    user: User;
-    token: string;
-  };
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface ValidationError {
+  loc: string[];
+  msg: string;
+  type: string;
+}
+
+export interface ApiErrorResponse {
+  detail: ValidationError[] | string;
 }

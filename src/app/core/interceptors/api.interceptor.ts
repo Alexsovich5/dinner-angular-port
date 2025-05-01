@@ -20,28 +20,48 @@ export const ApiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
     // Get the auth token if available
     const token = authService.getToken();
 
-    // Clone the request and add headers
-    req = req.clone({
-      setHeaders: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      // Make sure credentials are included for CORS
-      withCredentials: true
-    });
+    // Don't add content-type for OPTIONS requests as it can cause CORS issues
+    if (req.method === 'OPTIONS') {
+      req = req.clone({
+        setHeaders: {
+          'Accept': '*/*',
+        },
+        withCredentials: true
+      });
+    } else {
+      // For non-OPTIONS requests, add standard headers
+      req = req.clone({
+        setHeaders: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        withCredentials: true
+      });
+    }
   }
 
   // Process the request and handle errors
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       let errorMsg = '';
-      if (error.error instanceof ErrorEvent) {
+      // Handle validation errors from FastAPI
+      if (error.status === 422) {
+        // FastAPI returns validation errors in a specific format
+        const validationErrors = error.error?.detail || [];
+        if (validationErrors.length) {
+          errorMsg = validationErrors.map((err: any) =>
+            `${err.loc.join('.')}: ${err.msg}`
+          ).join(', ');
+        } else {
+          errorMsg = 'Validation error: Please check your input data';
+        }
+      } else if (error.error instanceof ErrorEvent) {
         // Client-side error
         errorMsg = `Error: ${error.error.message}`;
       } else {
         // Server-side error
-        errorMsg = `Error Code: ${error.status},  Message: ${error.message}`;
+        errorMsg = `Error Code: ${error.status}, Message: ${error.message || error.error?.detail || 'Unknown error'}`;
 
         // Handle authentication errors
         if (error.status === 401) {
@@ -49,7 +69,7 @@ export const ApiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
         }
       }
 
-      console.error(errorMsg);
+      console.error('API Error:', error);
       return throwError(() => new Error(errorMsg));
     })
   );

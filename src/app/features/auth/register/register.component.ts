@@ -213,28 +213,37 @@ export class RegisterComponent implements OnInit {
       this.isLoading = true;
       this.error = null;
 
+      // Format the date properly for the Python backend (YYYY-MM-DD)
+      const birthdate = this.personalForm.get('birthdate')?.value;
+      const formattedDate = birthdate instanceof Date
+        ? birthdate.toISOString().split('T')[0]
+        : birthdate;
+
       const formData: RegisterData = {
         email: this.accountForm.get('email')?.value,
         password: this.accountForm.get('password')?.value,
-        firstName: this.personalForm.get('firstName')?.value,
-        lastName: this.personalForm.get('lastName')?.value,
-        dateOfBirth: this.personalForm.get('birthdate')?.value,
+        first_name: this.personalForm.get('firstName')?.value,
+        last_name: this.personalForm.get('lastName')?.value,
+        date_of_birth: formattedDate,
         gender: this.personalForm.get('gender')?.value,
-        dietaryPreferences: this.preferencesForm.get('dietaryPreferences')?.value,
-        cuisinePreferences: this.preferencesForm.get('cuisinePreferences')?.value,
+        dietary_preferences: this.preferencesForm.get('dietaryPreferences')?.value,
+        cuisine_preferences: this.preferencesForm.get('cuisinePreferences')?.value,
         location: this.preferencesForm.get('location')?.value,
-        lookingFor: this.preferencesForm.get('lookingFor')?.value
+        looking_for: this.preferencesForm.get('lookingFor')?.value
       };
 
+      console.log('Sending registration data to FastAPI backend:', formData);
+
       this.authService.register(formData).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Registration successful:', response);
           this.router.navigate(['/login'], {
             state: { message: 'Registration successful! Please log in.' }
           });
         },
-        error: (err: HttpErrorResponse) => {
+        error: (err: Error) => {
           console.error('Registration error:', err);
-          this.error = err.message ?? 'Registration failed. Please try again.';
+          this.error = err.message;
           this.isLoading = false;
         }
       });
