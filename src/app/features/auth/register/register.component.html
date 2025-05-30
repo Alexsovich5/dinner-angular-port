@@ -4,6 +4,7 @@
       <div class="header">
         <mat-icon class="avatar-icon">person_add</mat-icon>
         <h1>Create Account</h1>
+        <p class="subtitle">Join Dinner1 to connect with dinner companions based on your preferences</p>
       </div>
 
       <mat-error *ngIf="error" class="error-alert">
@@ -13,6 +14,11 @@
           <mat-icon>close</mat-icon>
         </button>
       </mat-error>
+
+      <div class="progress-section">
+        <mat-progress-bar mode="determinate" [value]="getProgressValue(stepper.selectedIndex)"></mat-progress-bar>
+        <p class="progress-text">Step {{stepper.selectedIndex + 1}} of 3</p>
+      </div>
 
       <mat-stepper linear #stepper (selectionChange)="onStepChange($event)">
         <!-- Account Details Step -->
@@ -26,6 +32,21 @@
               </mat-error>
               <mat-error *ngIf="accountForm.get('email')?.hasError('email')">
                 Enter a valid email
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Username</mat-label>
+              <input matInput formControlName="username" required autocomplete="username">
+              <mat-hint>Choose a unique username for your profile</mat-hint>
+              <mat-error *ngIf="accountForm.get('username')?.hasError('required')">
+                Username is required
+              </mat-error>
+              <mat-error *ngIf="accountForm.get('username')?.hasError('minlength')">
+                Username must be at least 3 characters
+              </mat-error>
+              <mat-error *ngIf="accountForm.get('username')?.hasError('pattern')">
+                Username can only contain letters, numbers, and underscores
               </mat-error>
             </mat-form-field>
 

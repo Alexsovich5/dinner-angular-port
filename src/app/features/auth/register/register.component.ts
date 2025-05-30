@@ -17,6 +17,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatStepperModule } from '@angular/material/stepper';
 
@@ -39,6 +40,7 @@ import { MatStepperModule } from '@angular/material/stepper';
     MatCheckboxModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatProgressBarModule,
     MatDividerModule,
     MatStepperModule
   ]
@@ -125,10 +127,16 @@ export class RegisterComponent implements OnInit {
     // Use type-safe form initialization
     this.accountForm = this.fb.group<{
       email: any;
+      username: any;
       password: any;
       confirmPassword: any;
     }>({
       email: ['', [Validators.required, Validators.email]],
+      username: ['', [
+        Validators.required, 
+        Validators.minLength(3),
+        Validators.pattern(/^[a-zA-Z0-9_]+$/)
+      ]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator() });
@@ -208,6 +216,10 @@ export class RegisterComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  getProgressValue(currentStep: number): number {
+    return ((currentStep + 1) / 3) * 100;
+  }
+
   onSubmit(): void {
     if (this.accountForm.valid && this.personalForm.valid && this.preferencesForm.valid) {
       this.isLoading = true;
@@ -219,15 +231,20 @@ export class RegisterComponent implements OnInit {
         ? birthdate.toISOString().split('T')[0]
         : birthdate;
 
+      // Convert single cuisine preference to array for backend compatibility
+      const cuisinePreference = this.preferencesForm.get('cuisinePreferences')?.value;
+      const cuisinePreferencesArray = cuisinePreference ? [cuisinePreference] : [];
+
       const formData: RegisterData = {
         email: this.accountForm.get('email')?.value,
+        username: this.accountForm.get('username')?.value,
         password: this.accountForm.get('password')?.value,
         first_name: this.personalForm.get('firstName')?.value,
         last_name: this.personalForm.get('lastName')?.value,
         date_of_birth: formattedDate,
         gender: this.personalForm.get('gender')?.value,
         dietary_preferences: this.preferencesForm.get('dietaryPreferences')?.value,
-        cuisine_preferences: this.preferencesForm.get('cuisinePreferences')?.value,
+        cuisine_preferences: cuisinePreferencesArray,
         location: this.preferencesForm.get('location')?.value,
         looking_for: this.preferencesForm.get('lookingFor')?.value
       };
@@ -237,8 +254,10 @@ export class RegisterComponent implements OnInit {
       this.authService.register(formData).subscribe({
         next: (response) => {
           console.log('Registration successful:', response);
-          this.router.navigate(['/login'], {
-            state: { message: 'Registration successful! Please log in.' }
+          this.isLoading = false;
+          // The backend now returns LoginResponse, so user is automatically logged in
+          this.router.navigate(['/dashboard'], {
+            state: { message: 'Registration successful! Welcome to Dinner1!' }
           });
         },
         error: (err: Error) => {
