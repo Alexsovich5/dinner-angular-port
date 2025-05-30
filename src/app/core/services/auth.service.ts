@@ -74,6 +74,11 @@ export class AuthService {
     return !!this.currentUserSubject.value;
   }
 
+  updateCurrentUser(user: User): void {
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unknown error occurred';
 
